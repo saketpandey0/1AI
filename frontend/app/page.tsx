@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ArrowUp, ChevronDownIcon } from "lucide-react";
+import { ArrowUp, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const BACKEND_URL = "http://localhost:3000";
@@ -76,7 +76,7 @@ export default function Home() {
               <PopoverTrigger asChild>
                 <Button variant="secondary">
                   {AI_MODELS.find((model) => model.id === selectedModel)?.name}{" "}
-                  <ChevronDownIcon className="size-4" />
+                  <ChevronUpIcon className="size-4" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent side="bottom" align="start" sideOffset={10}>
