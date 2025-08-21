@@ -73,21 +73,35 @@ router.post("/chat", authMiddleware, async (req, res) => {
         existingMessages = InMemoryStore.getInstance().get(conversationId);
     }
 
+    // Set proper SSE headers
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
+    
     let message = "";
-    // EventEmitters
-    await createCompletion([...existingMessages, {
-        role: Role.User,
-        content: data.message
-    }], data.model, (chunk: string) => {
-        message += chunk;
-        res.write(chunk);
-    });
-
+    
+    try {
+        await createCompletion([...existingMessages, {
+            role: Role.User,
+            content: data.message
+        }], data.model, (chunk: string) => {
+            message += chunk;
+            // Format as proper SSE data
+            res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
+        });
+        
+        // Send completion signal
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        
+    } catch (error) {
+        console.error("Error in completion:", error);
+        res.write(`data: ${JSON.stringify({ error: "Failed to generate response" })}\n\n`);
+    } finally {
+        res.end(); // Always end the response
+    }
 
     console.log("message");
     console.log(message);
