@@ -56,6 +56,27 @@ router.post("/chat", authMiddleware, async (req, res) => {
         return
     }
 
+    // Check user credits before processing
+    const user = await prismaClient.user.findUnique({
+        where: { id: userId },
+        select: { credits: true, isPremium: true }
+    });
+
+    if (!user) {
+        res.status(404).json({
+            message: "User not found"
+        });
+        return;
+    }
+
+    if (user.credits <= 0) {
+        res.status(403).json({
+            message: "Insufficient credits. Please subscribe to continue.",
+            credits: user.credits
+        });
+        return;
+    }
+
     let existingMessages = InMemoryStore.getInstance().get(conversationId);
 
     if (!existingMessages.length) {
@@ -103,9 +124,6 @@ router.post("/chat", authMiddleware, async (req, res) => {
         res.end(); // Always end the response
     }
 
-    console.log("message");
-    console.log(message);
-
     InMemoryStore.getInstance().add(conversationId, {
         role: Role.User,
         content: data.message
@@ -125,20 +143,61 @@ router.post("/chat", authMiddleware, async (req, res) => {
             }
         })
     }
-    await prismaClient.message.createMany({
-        data: [
-            {
-                conversationId,
-                content: data.message,
-                role: Role.User
-            },
-            {
-                conversationId,
-                content: message,
-                role: Role.Agent,
-            },
-        ]
-    })
+    
+    // Save messages and deduct credits in a transaction
+    await prismaClient.$transaction([
+        prismaClient.message.createMany({
+            data: [
+                {
+                    conversationId,
+                    content: data.message,
+                    role: Role.User
+                },
+                {
+                    conversationId,
+                    content: message,
+                    role: Role.Agent,
+                },
+            ]
+        }),
+        // Deduct 1 credit for the message
+        prismaClient.user.update({
+            where: { id: userId },
+            data: {
+                credits: {
+                    decrement: 1
+                }
+            }
+        })
+    ])
+});
+
+// Get user credits endpoint
+router.get("/credits", authMiddleware, async (req, res) => {
+    const userId = req.userId;
+    
+    try {
+        const user = await prismaClient.user.findUnique({
+            where: { id: userId },
+            select: { credits: true, isPremium: true }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.json({
+            credits: user.credits,
+            isPremium: user.isPremium
+        });
+    } catch (error) {
+        console.error("Error fetching user credits:", error);
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
 });
 
 export default router;

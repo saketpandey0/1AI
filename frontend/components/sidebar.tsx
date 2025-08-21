@@ -6,10 +6,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Separator } from "./ui/separator";
 import { PanelLeftClose, Menu, SidebarIcon } from "lucide-react";
 import { useLayout } from "./layout-wrapper";
+import { useState } from "react";
+import PaymentModal from "./PaymentModal";
+import PaymentComponent from "./PaymentModal";
 
 export default function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useLayout();
-
   return (
     <>
       {/* Toggle button for when sidebar is closed */}
@@ -45,7 +47,7 @@ export default function Sidebar() {
               <Button variant="accent" className="text-center w-full" size="lg">
                 New Chat
               </Button>
-
+              <PaymentComponent />
               <div className="text-sm px-4 py-2 hover:bg-primary/10 rounded-lg cursor-pointer transition-all duration-150 truncate text-secondary-foreground whitespace-nowrap">
                 A Very Good Prompt A Very Good Prompt
               </div>

@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { BACKEND_URL } from "@/lib/utils";
 import { ArrowUp, ChevronDownIcon, ChevronUpIcon, User, Bot } from "lucide-react";
 import { useState } from "react";
 
@@ -15,7 +16,6 @@ interface ChatMessage {
   message: string;
 }
 
-const BACKEND_URL = "http://localhost:3000";
 
 const AI_MODELS = [
   { id: "openai/gpt-4o", name: "GPT-4" },
