@@ -7,6 +7,8 @@ export const createCompletion = async (messages: Message[],
     cb: (chunk: string) => void
 ) => {
     return new Promise<void>(async (resolve, reject) => {
+      console.log("sent");
+      console.log(messages);
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -34,6 +36,7 @@ export const createCompletion = async (messages: Message[],
 
               tokenIterations++;
               if (tokenIterations > MAX_TOKEN_ITERATIONS) {
+                console.log("max token iterations");
                 resolve()
                 return;
               }
@@ -47,7 +50,7 @@ export const createCompletion = async (messages: Message[],
               while (true) {
                 const lineEnd = buffer.indexOf('\n');
                 if (lineEnd === -1) { 
-                    resolve()
+                  console.log("max token iterations 2");
                     break
                 };
           
@@ -62,6 +65,8 @@ export const createCompletion = async (messages: Message[],
                     const parsed = JSON.parse(data);
                     const content = parsed.choices[0].delta.content;
                     if (content) {
+                      console.log("content");
+                      console.log(content);
                       cb(content);
                     }
                   } catch (e) {
@@ -72,6 +77,7 @@ export const createCompletion = async (messages: Message[],
               }
             }
           } finally {
+            resolve()
             reader.cancel();
           }
     })
