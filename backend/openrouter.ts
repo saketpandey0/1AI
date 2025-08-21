@@ -18,7 +18,7 @@ export const createCompletion = async (messages: Message[],
               messages: messages,
               stream: true,
             }),
-          });
+        });
           
           const reader = response.body?.getReader();
           if (!reader) {
