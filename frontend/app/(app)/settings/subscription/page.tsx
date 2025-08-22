@@ -1,3 +1,4 @@
+"use client";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -17,16 +18,18 @@ import APIKeysPage from "@/components/subscription/api-key";
 import { AttachmentsPage } from "@/components/subscription/attachments";
 import { ContactUsPage } from "@/components/subscription/contact-us";
 import { History } from "@/components/subscription/history";
+import { useUser } from "@/hooks/useUser";
+import { useRouter } from "next/navigation";
 
 export default async function SubscriptionPage() {
-  const user = await FetchUser();
-  console.log(user);
+  const { user, isLoading } = useUser();
+  const router = useRouter();
   return (
     <div className="bg-background text-foreground min-h-screen w-full border">
       <div className="mx-auto w-full max-w-6xl p-8">
         <div>
           <div className="mb-6 flex items-center justify-between text-2xl font-bold">
-            <Button asChild variant="ghost" className="font-semibold">
+            <Button asChild variant="ghost" className="font-semibold" onClick={() => router.push("/")}>
               <Link className="flex items-center gap-2" href="/">
                 <ArrowLeftIcon className="size-4" />
                 Back to chat

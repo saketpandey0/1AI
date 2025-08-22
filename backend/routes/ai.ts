@@ -14,6 +14,9 @@ router.get("/conversations", authMiddleware, async (req, res) => {
     const conversations = await prismaClient.conversation.findMany({
         where: {
             userId
+        },
+        orderBy: {
+            updatedAt: "desc"
         }
     })
 
