@@ -5,7 +5,7 @@ const TITLE =
 const DESCRIPTION =
   "T3chat is a platform that allows you to chat with AI, support different LLM, respond very fast, user friendly, have customization, cheap.";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3002";
 
 export const siteConfig: Metadata = {
   title: TITLE,

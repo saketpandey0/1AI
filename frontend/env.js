@@ -7,28 +7,26 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    GOOGLE_CLIENT_ID: z.string(),
-    GOOGLE_CLIENT_SECRET: z.string(),
-    DATABASE_URL: z.string().url(),
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
-      TYPEGPT_API_KEY: z.string(),
-      SECRURE_AUTH_SECRET: z.string(),
-      WEBHOOK_URL: z.string().url(),
-      TYPEGPT_API_URL: z.string().url(),
-      TURNSTILE_SITE_KEY: z.string(),
-      TURNSTILE_SITE_SECRET: z.string(),
-      STRIPE_SECRET_KEY: z.string(),
-      STRIPE_WEBHOOK_SECRET: z.string(),
-      MAIL_APP_USER: z.string(),
-      MAIL_APP_PASSWORD: z.string(),
-      UPSTASH_REDIS_REST_URL: z.string().url(),
-      UPSTASH_REDIS_REST_TOKEN: z.string(),
+    // AUTH_SECRET:
+    //   process.env.NODE_ENV === "production"
+    //     ? z.string()
+    //     : z.string().optional(),
+    // GOOGLE_CLIENT_ID: z.string(),
+    // GOOGLE_CLIENT_SECRET: z.string(),
+    // DATABASE_URL: z.string().url(),
+    // NODE_ENV: z
+    //   .enum(["development", "test", "production"])
+    //   .default("development"),
+      // TYPEGPT_API_KEY: z.string(),
+      // SECRURE_AUTH_SECRET: z.string(),
+      // WEBHOOK_URL: z.string().url(),
+      // TYPEGPT_API_URL: z.string().url(),
+      // TURNSTILE_SITE_KEY: z.string(),
+      // TURNSTILE_SITE_SECRET: z.string(),
+      // MAIL_APP_USER: z.string(),
+      // MAIL_APP_PASSWORD: z.string(),
+      // UPSTASH_REDIS_REST_URL: z.string().url(),
+      // UPSTASH_REDIS_REST_TOKEN: z.string(),
   },
 
   /**

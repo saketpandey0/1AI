@@ -1,11 +1,8 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
-  ChatCircleDotsIcon,
-  MicrophoneIcon,
   SpinnerGapIcon,
   CopyIcon,
   ThumbsDownIcon,
@@ -25,18 +22,9 @@ import { api } from "@/trpc/react";
 import TabsSuggestion from "./tabs-suggestion";
 import { ModelSelector } from "@/components/ui/model-selector";
 import { DEFAULT_MODEL_ID } from "@/models/constants";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
-import { useSpeechSynthesis } from "react-speech-kit";
-import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import {
   ArrowUpIcon,
-  Earth,
-  EarthIcon,
-  Globe,
-  Paperclip,
   WrapText,
 } from "lucide-react";
 import { atomOneDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
@@ -56,70 +44,23 @@ interface Message {
   content: string;
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3000";
+
 const UIInput = () => {
   const [model, setModel] = useState<string>(DEFAULT_MODEL_ID);
-  const [modeOfChatting, setModeOfChatting] = useState<"text" | "voice">(
-    "text"
-  );
   const [query, setQuery] = useState<string>("");
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [search, setSearch] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const welcomeSpokenRef = useRef(false);
   const [isWrapped, setIsWrapped] = useState(false);
   const { resolvedTheme } = useTheme();
 
   const toggleWrap = useCallback(() => {
     setIsWrapped((prev) => !prev);
   }, []);
-
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
-
-  const {
-    speak,
-    cancel,
-    speaking,
-    supported: ttsSupported,
-    voices,
-  } = useSpeechSynthesis();
-  const [selectedVoice, setSelectedVoice] =
-    useState<SpeechSynthesisVoice | null>(null);
-
-  useEffect(() => {
-    if (!browserSupportsSpeechRecognition) {
-      toast.error("Your browser doesn't support speech recognition.");
-    }
-  }, [browserSupportsSpeechRecognition]);
-
-  useEffect(() => {
-    if (modeOfChatting === "voice" && !ttsSupported) {
-      toast.error("Text-to-speech not supported in your browser");
-      setModeOfChatting("text");
-    }
-  }, [modeOfChatting, ttsSupported]);
-
-  useEffect(() => {
-    if (ttsSupported && voices.length > 0) {
-      const defaultVoice = voices.find((v) => v.default) || voices[0];
-      setSelectedVoice(defaultVoice!);
-    }
-  }, [voices, ttsSupported]);
-
-  useEffect(() => {
-    if (listening) {
-      setQuery(transcript);
-    }
-  }, [listening, transcript]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -129,35 +70,6 @@ const UIInput = () => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    if (
-      showWelcome &&
-      messages.length === 0 &&
-      modeOfChatting === "voice" &&
-      ttsSupported &&
-      selectedVoice &&
-      !welcomeSpokenRef.current
-    ) {
-      welcomeSpokenRef.current = true;
-      speak({
-        text: `Hello mate, how may I help you today?`,
-        voice: selectedVoice,
-      });
-    }
-  }, [
-    showWelcome,
-    messages.length,
-    modeOfChatting,
-    ttsSupported,
-    selectedVoice,
-    speak,
-  ]);
-
-  const createChat = api.chat.createChat.useMutation({
-    onError: (error) => {
-      console.error("Error saving chat:", error);
-    },
-  });
 
   const processStream = async (response: Response, userMessage: string) => {
     if (!response.ok) {
@@ -215,17 +127,11 @@ const UIInput = () => {
             clearTimeout(updateTimeout);
           }
 
-          if (modeOfChatting === "voice" && ttsSupported && selectedVoice) {
-            speak({
-              text: accumulatedContent,
-              voice: selectedVoice,
-            });
-          }
-
           break;
         }
 
         const chunk = new TextDecoder().decode(value);
+        console.log(chunk);
 
         buffer += chunk;
 
@@ -246,27 +152,9 @@ const UIInput = () => {
 
             try {
               const parsedData = JSON.parse(data) as {
-                choices?: Array<{
-                  delta?: {
-                    content?: string;
-                  };
-                }>;
-                error?: string;
+                content?: string
               };
-
-              if (parsedData.error) {
-                console.error("Stream error:", parsedData.error);
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === tempMessageId
-                      ? { ...msg, content: `Error: ${parsedData.error}` }
-                      : msg
-                  )
-                );
-                break;
-              }
-
-              const content = parsedData.choices?.[0]?.delta?.content;
+              const content = parsedData.content;
               if (content) {
                 accumulatedContent += content;
                 hasNewContent = true;
@@ -321,19 +209,18 @@ const UIInput = () => {
     abortControllerRef.current = new AbortController();
 
     try {
-      const { chatId } = await createChat.mutateAsync();
       setTimeout(() => {
         void (async () => {
           try {
-            const response = await fetch("/api/ask", {
+            const response = await fetch(`${BACKEND_URL}/ai/chat`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
               },
               body: JSON.stringify({
-                messages: [{ role: "user", content: currentQuery }],
+                message: currentQuery,
                 model: model,
-                chatId: chatId,
               }),
               signal: abortControllerRef.current?.signal,
             });
@@ -353,29 +240,6 @@ const UIInput = () => {
     }
   };
 
-  const handleStartListening = () => {
-    resetTranscript();
-    SpeechRecognition.startListening({ continuous: true });
-    toast.success("Listening...", {
-      description: "Speak now...",
-      duration: 5000,
-    });
-  };
-
-  const handleStopListening = () => {
-    SpeechRecognition.stopListening();
-    toast.success("Stopped listening", {
-      description: "Processing your voice input...",
-    });
-  };
-
-  const toggleMode = () => {
-    if (modeOfChatting === "voice" && speaking) {
-      cancel();
-    }
-    setModeOfChatting(modeOfChatting === "text" ? "voice" : "text");
-  };
-
   const handleCopy = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
@@ -384,19 +248,6 @@ const UIInput = () => {
     } catch (err) {
       console.error("Failed to copy: ", err);
     }
-  };
-
-  const handleFileInput = () => {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "image/*";
-    fileInput.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        setAttachments((prev) => [...prev, file]);
-      }
-    };
-    fileInput.click();
   };
 
   return (
@@ -586,27 +437,6 @@ const UIInput = () => {
                             <CheckIcon weight="bold" />
                           )}
                         </button>
-                        {modeOfChatting === "voice" && (
-                          <button
-                            className="hover:bg-accent flex size-7 items-center justify-center rounded-lg"
-                            onClick={() => {
-                              if (speaking) {
-                                cancel();
-                              } else if (ttsSupported && selectedVoice) {
-                                speak({
-                                  text: message.content,
-                                  voice: selectedVoice,
-                                });
-                              }
-                            }}
-                          >
-                            {speaking ? (
-                              <SpeakerXIcon weight="bold" />
-                            ) : (
-                              <SpeakerHighIcon weight="bold" />
-                            )}
-                          </button>
-                        )}
                       </div>
                     )}
                     {message.role === "user" && (
@@ -652,9 +482,7 @@ const UIInput = () => {
                   }
                 }}
                 placeholder={
-                  modeOfChatting === "voice"
-                    ? "Or type here..."
-                    : "Ask whatever you want to be"
+                  "Ask whatever you want to be"
                 }
                 className="h-[2rem] resize-none rounded-none border-none bg-transparent px-0 py-1 shadow-none ring-0 focus-visible:ring-0 dark:bg-transparent"
                 disabled={isLoading}
