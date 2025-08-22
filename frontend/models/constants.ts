@@ -4,7 +4,7 @@ export const MODELS: Model[] = [
   {
     id: "google/gemini-2.5-flash",
     name: "Gemini 2.5 Flash",
-    provider: ModelProvider.OPENAI,
+    provider: ModelProvider.GOOGLE,
     description: "Fast and efficient model for most tasks",
     maxTokens: 16385,
     pricePer1kTokens: 0.0015,
