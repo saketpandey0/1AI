@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 const TITLE =
-  "T3chat - An Open-source, user-friendly fast AI response chat app";
+  "1AI - An Open-source, user-friendly fast AI response chat app";
 const DESCRIPTION =
-  "T3chat is a platform that allows you to chat with AI, support different LLM, respond very fast, user friendly, have customization, cheap.";
+  "1AI is a platform that allows you to chat with AI, support different LLM, respond very fast, user friendly, have customization, cheap.";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3002";
 
@@ -22,7 +22,7 @@ export const siteConfig: Metadata = {
   keywords: [
     "1AI Chat",
     "AI Fiesta",
-    "T3chat",
+    "1AI",
     "AI",
     "LLM",
     "Fast",

@@ -9,7 +9,7 @@ export const Footer = () => {
             <div className="from-primary drop-shadow-primary flex size-8 items-center justify-center rounded-xl bg-gradient-to-tr to-pink-500 drop-shadow-md">
               <ChatCircleIcon weight="bold" className="size-5" />
             </div>
-            <h1 className="mt-4 font-semibold">T3Chat</h1>
+            <h1 className="mt-4 font-semibold">1AI</h1>
             <div>Copyright &copy; {new Date().getFullYear()}</div>
           </div>
         </div>
