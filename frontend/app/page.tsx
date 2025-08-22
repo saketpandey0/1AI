@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+"use client";
+import React, { useEffect } from "react";
 import UIInput from "@/components/ui/ui-input";
 import { useRouter } from "next/navigation";
 
 const AskPage = () => {
-  const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
   useEffect(() => {
     router.push("/ask");
