@@ -3,7 +3,7 @@ import { type Model, ModelCapability, ModelProvider } from "./types";
 export const MODELS: Model[] = [
   {
     id: "google/gemini-2.5-flash",
-    name: "GPT 4o",
+    name: "Gemini 2.5 Flash",
     provider: ModelProvider.OPENAI,
     description: "Fast and efficient model for most tasks",
     maxTokens: 16385,
